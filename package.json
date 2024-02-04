@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@arction/lcjs": "^4.1.1",
-    "@arction/xydata": "^1.4.0"
+    "@arction/xydata": "^1.4.0",
+    "perf_hooks": "^0.0.1"
   },
   "lightningChart": {
     "eID": "0150"
