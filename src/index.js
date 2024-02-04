@@ -1652,19 +1652,10 @@ useChart = (point) => {
       // Push the created points to the series.
       series.add({ x: point.timestamp, y: point.data.y });
     });
-
-  setTimeout(() => {
-    setInterval(() => {
-      var context = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = context.createOscillator(); // instantiate an oscillator
-      osc.type = "square"; // this is the default - also square, sawtooth, triangle
-      osc.frequency.value = 640; // Hz
-      osc.connect(context.destination); // connect it to the destination
-      osc.start(); // start the oscillator
-      osc.stop(context.currentTime + 0.15); // stop 2 seconds after the current time
-    }, 960);
-  }, 0);
 };
+
+var globalIDForSounds;
+var globalIDForPi;
 
 const button = document.createElement("button");
 button.textContent = "Dead";
@@ -1679,6 +1670,7 @@ button.style.marginRight = "1rem";
 button.addEventListener("click", () => {
   if (chart) {
     chart.dispose();
+    clearInterval(globalIDForSounds);
   }
 
   function generateCoordinates(numPoints) {
@@ -1693,6 +1685,16 @@ button.addEventListener("click", () => {
   const coordinates = generateCoordinates(numPoints);
 
   useChart(coordinates);
+
+  globalIDForPi = setInterval(() => {
+    var context2 = new (window.AudioContext || window.webkitAudioContext)();
+    var osc2 = context2.createOscillator(); // instantiate an oscillator
+    osc2.type = "square"; // this is the default - also square, sawtooth, triangle
+    osc2.frequency.value = 300; // Hz
+    osc2.connect(context2.destination); // connect it to the destination
+    osc2.start(); // start the oscillator
+    osc2.stop(context2.currentTime + 0.9);
+  }, 1000);
 });
 document.body.appendChild(button);
 
@@ -1709,8 +1711,18 @@ button2.style.marginRight = "1rem";
 button2.addEventListener("click", () => {
   if (chart) {
     chart.dispose();
+    clearInterval(globalIDForPi);
   }
 
   useChart(points);
+  globalIDForSounds = setInterval(() => {
+    var context = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = context.createOscillator(); // instantiate an oscillator
+    osc.type = "square"; // this is the default - also square, sawtooth, triangle
+    osc.frequency.value = 640; // Hz
+    osc.connect(context.destination); // connect it to the destination
+    osc.start(); // start the oscillator
+    osc.stop(context.currentTime + 0.15); // stop 2 seconds after the current time
+  }, 960);
 });
 document.body.appendChild(button2);
