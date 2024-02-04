@@ -1690,10 +1690,10 @@ button.addEventListener("click", () => {
     var context2 = new (window.AudioContext || window.webkitAudioContext)();
     var osc2 = context2.createOscillator(); // instantiate an oscillator
     osc2.type = "square"; // this is the default - also square, sawtooth, triangle
-    osc2.frequency.value = 300; // Hz
+    osc2.frequency.value = 400; // Hz
     osc2.connect(context2.destination); // connect it to the destination
     osc2.start(); // start the oscillator
-    osc2.stop(context2.currentTime + 0.9);
+    osc2.stop(context2.currentTime + 1);
   }, 1000);
 });
 document.body.appendChild(button);
