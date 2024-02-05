@@ -72,12 +72,14 @@ document.body.style.boxSizing = "border-box";
 // Para limpiar los sonidos cuando se cambia de onda
 var soundIntervalID1;
 var soundIntervalID2;
+var soundIntervalID3;
 
 const clearStuff = () => {
   if (chart) {
     chart.dispose();
     clearInterval(soundIntervalID1);
     clearInterval(soundIntervalID2);
+    clearInterval(soundIntervalID3);
   }
 };
 
@@ -142,7 +144,7 @@ const generateTachycardiaWave = () => {
   clearStuff();
 
   function generateECGCoordinates(numPoints, amplitude, frequency, phaseShift) {
-    console.log(frequency)
+    console.log(frequency);
     const coordinates = [];
     for (let i = 0; i < numPoints; i++) {
       const x = i;
@@ -202,7 +204,44 @@ const generateDeadWave = () => {
   }, 1000);
 };
 
+const generateVentricularWave = () => {
+  clearStuff();
+
+  function generateCoordinates(numPoints, amplitude, frequency) {
+    const coordinates = [];
+    let prevY = 0; // Valor inicial de y
+    for (let i = 0; i < numPoints; i++) {
+      const x = i;
+      const phaseShift = Math.random() * Math.PI * 2; // Desplazamiento de fase aleatorio para cada punto
+      let y = amplitude * Math.sin((2 * Math.PI * frequency * x) / numPoints + phaseShift); // Agregar un componente aleatorio
+      y = Math.min(prevY + 10, Math.max(prevY - 10, y)); // Limitar la variación de y respecto al punto anterior
+      coordinates.push({ x, y });
+      prevY = y; // Actualizar el valor anterior de y
+    }
+    return coordinates;
+  }
+
+  const numPoints = 4000; // Número de puntos para el ECG
+  const amplitude = 500; // Amplitud máxima de la onda (ajustar según sea necesario)
+  const frequency = 6; // Frecuencia de la onda (ajustar según sea necesario)
+
+  const coordinates = generateCoordinates(numPoints, amplitude, frequency);
+
+  useChart(coordinates);
+
+  soundIntervalID3 = setInterval(() => {
+    var context3 = new (window.AudioContext || window.webkitAudioContext)();
+    var osc3 = context3.createOscillator(); // instantiate an oscillator
+    osc3.type = "square"; // this is the default - also square, sawtooth, triangle
+    osc3.frequency.value = 640; // Hz
+    osc3.connect(context3.destination); // connect it to the destination
+    osc3.start(); // start the oscillator
+    osc3.stop(context3.currentTime + Math.random() * 0.5); // stop 2 seconds after the current time
+  }, 600);
+};
+
 // Final
 createButton("Normal Sinus Rhythm", generateNormalWave);
 createButton("Asystole", generateDeadWave);
 createButton("Tachycardia", generateTachycardiaWave);
+createButton("Ventricular Fibrillation", generateVentricularWave);
