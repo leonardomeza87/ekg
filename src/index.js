@@ -138,6 +138,43 @@ const generateNormalWave = () => {
   }, 960);
 };
 
+const generateTachycardiaWave = () => {
+  clearStuff();
+
+  function generateECGCoordinates(numPoints, amplitude, frequency, phaseShift) {
+    console.log(frequency)
+    const coordinates = [];
+    for (let i = 0; i < numPoints; i++) {
+      const x = i;
+      const y =
+        amplitude * 0.5 * Math.sin((2 * Math.PI * frequency * x) / numPoints + phaseShift) +
+        amplitude * 0.3 * Math.sin((2 * Math.PI * 2 * frequency * x) / numPoints + phaseShift) +
+        amplitude * 0.2 * Math.sin((2 * Math.PI * 3 * frequency * x) / numPoints + phaseShift);
+      coordinates.push({ x, y });
+    }
+    return coordinates;
+  }
+
+  const numPoints = 4000; // Número de puntos para el ECG (3 segundos con 1000 puntos por segundo)
+  const amplitude = 500; // Amplitud de la onda
+  const frequency = 12; // Frecuencia de la onda (2 ciclos por segundo)
+  const phaseShift = Math.PI / 2; // Desplazamiento de fase para obtener una onda inicialmente positiva
+
+  const coordinates = generateECGCoordinates(numPoints, amplitude, frequency, phaseShift);
+
+  useChart(coordinates);
+
+  soundIntervalID1 = setInterval(() => {
+    var context = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = context.createOscillator(); // instantiate an oscillator
+    osc.type = "square"; // this is the default - also square, sawtooth, triangle
+    osc.frequency.value = 800; // Hz
+    osc.connect(context.destination); // connect it to the destination
+    osc.start(); // start the oscillator
+    osc.stop(context.currentTime + 0.1); // stop 2 seconds after the current time
+  }, 500);
+};
+
 const generateDeadWave = () => {
   clearStuff();
 
@@ -168,3 +205,4 @@ const generateDeadWave = () => {
 // Final
 createButton("Normal Sinus Rhythm", generateNormalWave);
 createButton("Asystole", generateDeadWave);
+createButton("Tachycardia", generateTachycardiaWave);
