@@ -1,6 +1,3 @@
-/*
- * LightningChartJS example that showcases a simulated ECG signal.
- */
 // Import LightningChartJS
 const lcjs = require("@arction/lcjs");
 
@@ -1610,7 +1607,7 @@ useChart = (point) => {
     .ChartXY({
       // theme: Themes.darkGold,
     })
-    .setTitle("ECG");
+    .setTitle("CardioWave Simulator");
 
   // Create line series optimized for regular progressive X data.
   const series = chart
@@ -1654,24 +1651,85 @@ useChart = (point) => {
     });
 };
 
-var globalIDForSounds;
-var globalIDForPi;
+// ----------------------------------------------------------------------------------------------
 
-const button = document.createElement("button");
-button.textContent = "Dead";
-button.style.backgroundColor = "white";
-button.style.color = "black";
-button.style.fontSize = "16px";
-button.style.padding = "10px 20px";
-button.style.border = "1px solid gray";
-button.style.borderRadius = "5px";
-button.style.cursor = "pointer";
-button.style.marginRight = "1rem";
-button.addEventListener("click", () => {
+// CSS basico
+
+document.body.style.margin = "1rem";
+document.body.style.padding = "0";
+document.body.style.boxSizing = "border-box";
+
+// Para limpiar los sonidos cuando se cambia de onda
+var soundIntervalID1;
+var soundIntervalID2;
+
+const clearStuff = () => {
   if (chart) {
     chart.dispose();
-    clearInterval(globalIDForSounds);
+    clearInterval(soundIntervalID1);
+    clearInterval(soundIntervalID2);
   }
+};
+
+// Para generar los botones dinamicamente
+const createButton = (text, callback) => {
+  const button = document.createElement("button");
+
+  button.textContent = text;
+
+  button.style.backgroundColor = "white";
+  button.style.color = "black";
+  button.style.fontSize = "16px";
+  button.style.padding = "10px 20px";
+  button.style.border = "1px solid gray";
+  button.style.borderRadius = "5px";
+  button.style.cursor = "pointer";
+  button.style.margin = "0 1rem 1rem 0";
+
+  button.addEventListener("click", callback);
+
+  document.body.appendChild(button);
+};
+
+// Funciones que definen las ondas
+const generateNormalWave = () => {
+  clearStuff();
+
+  function generateECGCoordinates(numPoints, amplitude, frequency, phaseShift) {
+    const coordinates = [];
+    for (let i = 0; i < numPoints; i++) {
+      const x = i;
+      const y =
+        amplitude * 0.5 * Math.sin((2 * Math.PI * frequency * x) / numPoints + phaseShift) +
+        amplitude * 0.3 * Math.sin((2 * Math.PI * 2 * frequency * x) / numPoints + phaseShift) +
+        amplitude * 0.2 * Math.sin((2 * Math.PI * 3 * frequency * x) / numPoints + phaseShift);
+      coordinates.push({ x, y });
+    }
+    return coordinates;
+  }
+
+  const numPoints = 4000; // Número de puntos para el ECG (3 segundos con 1000 puntos por segundo)
+  const amplitude = 500; // Amplitud de la onda
+  const frequency = 6; // Frecuencia de la onda (2 ciclos por segundo)
+  const phaseShift = Math.PI / 2; // Desplazamiento de fase para obtener una onda inicialmente positiva
+
+  const coordinates = generateECGCoordinates(numPoints, amplitude, frequency, phaseShift);
+
+  useChart(coordinates);
+
+  soundIntervalID1 = setInterval(() => {
+    var context = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = context.createOscillator(); // instantiate an oscillator
+    osc.type = "square"; // this is the default - also square, sawtooth, triangle
+    osc.frequency.value = 640; // Hz
+    osc.connect(context.destination); // connect it to the destination
+    osc.start(); // start the oscillator
+    osc.stop(context.currentTime + 0.15); // stop 2 seconds after the current time
+  }, 960);
+};
+
+const generateDeadWave = () => {
+  clearStuff();
 
   function generateCoordinates(numPoints) {
     const coordinates = [];
@@ -1686,7 +1744,7 @@ button.addEventListener("click", () => {
 
   useChart(coordinates);
 
-  globalIDForPi = setInterval(() => {
+  soundIntervalID2 = setInterval(() => {
     var context2 = new (window.AudioContext || window.webkitAudioContext)();
     var osc2 = context2.createOscillator(); // instantiate an oscillator
     osc2.type = "square"; // this is the default - also square, sawtooth, triangle
@@ -1695,34 +1753,8 @@ button.addEventListener("click", () => {
     osc2.start(); // start the oscillator
     osc2.stop(context2.currentTime + 1);
   }, 1000);
-});
-document.body.appendChild(button);
+};
 
-const button2 = document.createElement("button");
-button2.textContent = "Normal";
-button2.style.backgroundColor = "white";
-button2.style.color = "black";
-button2.style.fontSize = "16px";
-button2.style.padding = "10px 20px";
-button2.style.border = "1px solid gray";
-button2.style.borderRadius = "5px";
-button2.style.cursor = "pointer";
-button2.style.marginRight = "1rem";
-button2.addEventListener("click", () => {
-  if (chart) {
-    chart.dispose();
-    clearInterval(globalIDForPi);
-  }
-
-  useChart(points);
-  globalIDForSounds = setInterval(() => {
-    var context = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = context.createOscillator(); // instantiate an oscillator
-    osc.type = "square"; // this is the default - also square, sawtooth, triangle
-    osc.frequency.value = 640; // Hz
-    osc.connect(context.destination); // connect it to the destination
-    osc.start(); // start the oscillator
-    osc.stop(context.currentTime + 0.15); // stop 2 seconds after the current time
-  }, 960);
-});
-document.body.appendChild(button2);
+// Final
+createButton("Normal Sinus Rhythm", generateNormalWave);
+createButton("Asystole", generateDeadWave);
